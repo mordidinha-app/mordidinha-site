@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Convite para o álbum · Mordidinha</title>
+<meta name="description" content="Você foi convidado para o álbum de figurinhas do bebê na Mordidinha.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Convite para o álbum do bebê na Mordidinha">
+<meta property="og:description" content="Cada primeira mordida vira uma figurinha. Toque para abrir ou baixar o app.">
+<meta property="og:image" content="https://mordidinha-app.github.io/mordidinha-site/icone.png">
+<link rel="icon" href="icone.png">
+<style>
+:root{--leite:#FFF6EC;--cafe:#1E1A16;--sec:#6B5E52;--tomate:#FF5A36;--linha:#E9DCCB}
+*{box-sizing:border-box}
+body{margin:0;background:var(--leite);color:var(--cafe);font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+main{max-width:480px;margin:0 auto;padding:40px 20px 60px;text-align:center}
+.icone{width:96px;height:96px;border-radius:24px;box-shadow:0 8px 24px rgba(107,78,50,.18)}
+.marca{font-weight:800;color:var(--tomate);letter-spacing:-.3px;margin-top:12px}
+h1{font-size:30px;line-height:1.1;letter-spacing:-1px;margin:12px 0 8px}
+p{color:var(--sec);margin:0 0 12px}
+.cartao{background:#fff;border:1px solid var(--linha);border-radius:24px;padding:18px;margin:24px 0}
+.codigo{font-size:34px;font-weight:800;letter-spacing:6px;margin:4px 0 10px}
+.botao{display:flex;align-items:center;justify-content:center;min-height:52px;border-radius:999px;border:0;width:100%;font:700 17px/1 inherit;font-family:inherit;text-decoration:none;cursor:pointer;margin:10px 0}
+.primario{background:var(--tomate);color:#fff}
+.escuro{background:var(--cafe);color:#fff}
+.claro{background:#fff;color:var(--cafe);border:1.5px solid var(--linha)}
+.passos{text-align:left;color:var(--sec);padding-left:22px;margin:16px 0 0}
+.passos li{margin:6px 0}
+.oculto{display:none}
+.nota{font-size:14px}
+</style>
+</head>
+<body>
+<main>
+<img class="icone" src="icone.png" alt="">
+<div class="marca">mordidinha</div>
+<h1>Você foi convidado para o álbum do bebê</h1>
+<p>Cada primeira mordida vira uma figurinha. Veja o álbum e registre as caretas junto com a família.</p>
+
+<div class="cartao">
+  <p class="nota">Código do convite</p>
+  <div class="codigo" id="codigo">——</div>
+  <button class="botao claro" id="copiar" type="button">Copiar código</button>
+</div>
+
+<a class="botao primario" id="abrir" href="#">Abrir o convite no app</a>
+<a class="botao escuro" id="play" href="#">Baixar no Google Play</a>
+<a class="botao escuro oculto" id="apple" href="#">Baixar na App Store</a>
+<p class="nota oculto" id="em-breve">No iPhone, a Mordidinha chega em breve na App Store.</p>
+
+<ol class="passos">
+  <li>Baixe a Mordidinha.</li>
+  <li>Toque em "Tenho um convite da família".</li>
+  <li>Use o código acima.</li>
+</ol>
+</main>
+<script>
+(function(){
+  var APP_STORE = "";
+  var PACOTE = "br.com.mordidinha";
+  var bruto = new URLSearchParams(location.search).get("c") || new URLSearchParams(location.search).get("codigo") || "";
+  var codigo = bruto.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
+  var ua = navigator.userAgent || "";
+  var android = /Android/i.test(ua);
+  var ios = /iPhone|iPad|iPod/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  var play = "https://play.google.com/store/apps/details?id=" + PACOTE + "&referrer=" + encodeURIComponent("convite=" + codigo);
+  var esquema = "mordidinha://convite" + (codigo ? "?codigo=" + codigo : "");
+
+  document.getElementById("codigo").textContent = codigo || "——";
+  document.getElementById("play").href = play;
+
+  var apple = document.getElementById("apple");
+  if (APP_STORE) { apple.href = APP_STORE; apple.classList.remove("oculto"); }
+  else if (!android) { document.getElementById("em-breve").classList.remove("oculto"); }
+  if (ios) document.getElementById("play").classList.add("oculto");
+  if (android) apple.classList.add("oculto");
+
+  function copiar() {
+    if (!codigo || !navigator.clipboard) return Promise.resolve();
+    return navigator.clipboard.writeText(codigo).catch(function(){});
+  }
+
+  document.getElementById("copiar").addEventListener("click", function(){
+    var botao = this;
+    copiar().then(function(){ botao.textContent = "Código copiado"; });
+  });
+
+  var abrir = document.getElementById("abrir");
+  if (android) {
+    abrir.href = "intent://convite" + (codigo ? "?codigo=" + codigo : "") + "#Intent;scheme=mordidinha;package=" + PACOTE + ";S.browser_fallback_url=" + encodeURIComponent(play) + ";end";
+  } else {
+    abrir.href = esquema;
+    abrir.addEventListener("click", function(){
+      copiar();
+      setTimeout(function(){
+        if (document.visibilityState === "visible" && APP_STORE) location.href = APP_STORE;
+      }, 1600);
+    });
+  }
+  abrir.addEventListener("click", copiar);
+  document.getElementById("play").addEventListener("click", copiar);
+  apple.addEventListener("click", copiar);
+})();
+</script>
+</body>
+</html>
